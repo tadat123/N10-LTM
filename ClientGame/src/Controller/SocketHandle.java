@@ -32,7 +32,7 @@ public class SocketHandle implements Runnable{
     @Override
     public void run(){
         try{
-            socketOfClient = new Socket("127.0.0.1", 7777);
+            socketOfClient = new Socket("192.168.0.104", 7777);
             System.out.println("Connect Completed");
             os = new BufferedWriter(new OutputStreamWriter(socketOfClient.getOutputStream()));
             is = new BufferedReader(new InputStreamReader(socketOfClient.getInputStream()));
