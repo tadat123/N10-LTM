@@ -6,6 +6,8 @@ package View;
 
 import Controller.Client;
 import Model.User;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +34,34 @@ public class DashBoardFrm extends javax.swing.JFrame {
         this.setResizable(false);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(null);
+
+        // Thêm code để làm đẹp giao diện
+        // Đặt màu nền cho JFrame
+        getContentPane().setBackground(new Color(230, 240, 250));
+
+        // Tùy chỉnh JTable
+        jTable1.setBackground(Color.WHITE);
+        jTable1.setForeground(Color.BLACK);
+        jTable1.setRowHeight(30);
+        jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        // Tùy chỉnh header của JTable
+        jTable1.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 16));
+        jTable1.getTableHeader().setBackground(new Color(32, 136, 203));
+        jTable1.getTableHeader().setForeground(Color.WHITE);
+
+        // Tùy chỉnh các nút và label khác nếu có
+        // Ví dụ:
+        // myButton.setBackground(new Color(32, 136, 203));
+        // myButton.setForeground(Color.WHITE);
+        // myButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
         rankSrc = new ArrayList<>();
-        rankSrc.add("rank-gold");
-        rankSrc.add("rank-sliver");
+        rankSrc.add("gold-rank");
+        rankSrc.add("silver-rank");
         rankSrc.add("bronze-rank");
         for(int i=0; i<5; i++){
-            rankSrc.add("nomal-rank");
+            rankSrc.add("normal-rank");
         }
         try {
             Client.socketHandle.write("get-rank-charts,");
@@ -50,11 +74,15 @@ public class DashBoardFrm extends javax.swing.JFrame {
         this.listUserStatics = users;
         tableModel.setRowCount(0);
         int i=0;
+        jTable1.setRowHeight(80); 
         for(User user : listUserStatics){
+            ImageIcon originalIcon = new ImageIcon("assets/" + rankSrc.get(i) + ".png");
+        // Thay đổi kích thước ảnh thành 30x30
+            ImageIcon resizedIcon = new ImageIcon(originalIcon.getImage().getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH));
             tableModel.addRow(new Object[]{
                 i+1,
                 user.getNickname(),
-                new ImageIcon("assets/"+rankSrc.get(i)+".png")
+                resizedIcon
             });
             i++;
         }
@@ -66,6 +94,7 @@ public class DashBoardFrm extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
+        Object[][] rows = { }; String[] columns = {"Hạng","Nickname","Rank"}; DefaultTableModel model = new DefaultTableModel(rows, columns){     @Override     public Class<?> getColumnClass(int column){         switch(column){             case 0: return String.class;             case 1: return String.class;             case 2: return ImageIcon.class;             default: return Object.class;         }     } };
         jTable1 = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
 
@@ -75,14 +104,8 @@ public class DashBoardFrm extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Bảng xếp hạng");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
+        jTable1.setModel(model);
+        jTable1.setFillsViewportHeight(true);
         jScrollPane1.setViewportView(jTable1);
 
         jButton1.setText("Thoát");
@@ -122,7 +145,7 @@ public class DashBoardFrm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Client.closeView(Client.View.DASHBOARD ); 
+        Client.closeView(Client.View.DASHBOARD); 
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

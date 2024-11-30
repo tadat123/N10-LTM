@@ -2,35 +2,33 @@ package View;
 
 import Controller.Client;
 import Model.User;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
-
 
 /**
  *
  * @author tadat
  */
 public class GamePlayMutilFrm extends javax.swing.JFrame {
+
     private User competitor;
-    
-    private int  numberofMatch;
-    
+
+    private int numberofMatch;
+
     private int userWin;
     private int competitorWin;
-//    private Thread sendThread;
-//    private boolean isSending;
-//    private Thread listenThread;
-//    private boolean isListening;
     private String competitorIP;
-    
-    //variable ready
+    private int roomID;
     private boolean userReady = false;
     private boolean competitorReady = false;
+
     public GamePlayMutilFrm(User competitor, int room_ID, int isStart, String competitorIP) {
         initComponents();
+        roomID = room_ID;
         numberofMatch = isStart;
         this.competitor = competitor;
         this.competitorIP = competitorIP;
@@ -47,22 +45,59 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
         jLabel13.setText(Client.user.getNickname());
         jLabel14.setText(Integer.toString(Client.user.getNOG()));
         jLabel15.setText(Integer.toString(Client.user.getNOW()));
-        
+
         jLabel16.setText(competitor.getNickname());
         jLabel17.setText(Integer.toString(competitor.getNOG()));
         jLabel18.setText(Integer.toString(competitor.getNOW()));
-        
+
         jButton1.setIcon(new ImageIcon("assets/V.png"));
         jButton4.setIcon(new ImageIcon("assets/X.png"));
-        
+
 //        jButton5.setIcon(new ImageIcon("assets/V.png"));
 //        jButton3.setIcon(new ImageIcon("assets/X.png"));
 //        
-        jLabel2.setText("Phòng: "+ room_ID);
+        jLabel2.setText("Phòng: " + room_ID);
+        // Customizing UI
+        customizeUI();
     }
 
+    private void customizeUI() {
+        // Set background colors
+        jPanel1.setBackground(new Color(240, 240, 240));
+        jPanel2.setBackground(new Color(255, 204, 204));
+        jPanel3.setBackground(new Color(255, 204, 204));
+        jPanel4.setBackground(new Color(255, 204, 255));
+        jPanel5.setBackground(new Color(255, 204, 255));
+        jPanel6.setBackground(new Color(255, 204, 255));
+        jPanel7.setBackground(new Color(255, 204, 255));
 
-    
+        // Set font styles
+        jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        jLabel2.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        jLabel3.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel4.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel5.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel6.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel7.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel8.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel9.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel10.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel11.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel12.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel13.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel14.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel15.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel16.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel17.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        jLabel18.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        // Set button styles
+        jButton1.setBackground(new Color(102, 255, 102));
+        jButton4.setBackground(new Color(255, 102, 102));
+        jButton2.setBackground(new Color(102, 204, 255));
+        jButton2.setFont(new Font("Segoe UI", Font.BOLD, 14));
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -361,6 +396,11 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
 
         jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_DOWN_MASK));
         jMenuItem2.setText("Exit");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu1.add(jMenuItem2);
 
         jMenuBar1.add(jMenu1);
@@ -443,17 +483,17 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-        // Gửi thông điệp "ready" từ client lên server
-        Client.socketHandle.write("ready," + Client.user.getID());
+            // Gửi thông điệp "ready" từ client lên server
+            Client.socketHandle.write("ready," + Client.user.getID());
 
-        // Cập nhật giao diện sau khi nhấn "ready", ví dụ như vô hiệu hóa nút để không nhấn lại
-        jButton1.setEnabled(false); // Vô hiệu hóa nút sau khi nhấn
-        jLabel12.setText("Sẵn sàng");
+            // Cập nhật giao diện sau khi nhấn "ready", ví dụ như vô hiệu hóa nút để không nhấn lại
+            jButton1.setEnabled(false); // Vô hiệu hóa nút sau khi nhấn
+            jLabel12.setText("Sẵn sàng");
 
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Lỗi khi gửi thông điệp sẵn sàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-    }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi gửi thông điệp sẵn sàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
@@ -461,7 +501,7 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
             Client.socketHandle.write("cancel-ready," + Client.user.getID());
             jButton1.setEnabled(true); // Kích hoạt lại nút sẵn sàng
             //        jLabelStatus.setText("Bạn đã hủy sẵn sàng. Nhấn 'V' để sẵn sàng lại.");
-
+            jLabel12.setEnabled(false);
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi gửi thông điệp hủy sẵn sàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -469,7 +509,7 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
-           if (evt.getKeyCode() == 10) {
+        if (evt.getKeyCode() == 10) {
             try {
                 if (jTextField1.getText().isEmpty()) {
                     return;
@@ -487,7 +527,7 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1KeyPressed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-           try {
+        try {
             if (jTextField1.getText().isEmpty()) {
                 throw new Exception("Vui lòng nhập nội dung tin nhắn");
             }
@@ -508,13 +548,18 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    public void addMessage(String message){
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        Client.closeView(Client.View.GAMEMULTI);
+        Client.openView(Client.View.MAIN);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    public void addMessage(String message) {
         String temp = jTextArea1.getText();
-        temp += competitor.getNickname() + ": " + message+"\n";
+        temp += competitor.getNickname() + ": " + message + "\n";
         jTextArea1.setText(temp);
         jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength());
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -556,37 +601,55 @@ public class GamePlayMutilFrm extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     public void startGame() {
-        Client.openView(Client.View.GAMEPLAY); 
+        Client.openView(Client.View.GAMEPLAYM, roomID);
     }
-    // Cập nhật jLabel1 với tỷ số tổng khi người dùng thắng
+
+    public void handleGameResult(String result, String winnerID) {
+        if (result.equals("draw")) {
+            String tmp = jTextArea1.getText();
+            tmp += "--Trận đấu hòa--\n";
+            jTextArea1.setText(tmp);
+            jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength());
+        } else if (result.startsWith("win")) {
+            if (Integer.parseInt(winnerID) == Client.user.getID()) {
+                increaseWinMatchToUser();
+            } else {
+                increaseWinMatchToCompetitor();
+            }
+        }
+    }
+
     public void increaseWinMatchToUser() {
+        System.out.println(Client.user.getID());
         Client.user.setNOW(Client.user.getNOW() + 1);
-        jLabel14.setText("" + Client.user.getNOW()); // Hiển thị số trận thắng của người dùng
-            userWin++; // Tăng tỷ số cho người dùng
-        updateScoreLabel(); // Cập nhật jLabel1 với tỷ số mới
-    
+        jLabel15.setText("" + Client.user.getNOW());
+        Client.user.setNOG(Client.user.getNOG() + 1);
+        jLabel14.setText("" + Client.user.getNOG());
+        userWin++;
+        updateScoreLabel();
+
         String tmp = jTextArea1.getText();
         tmp += "--Bạn đã thắng, tỷ số hiện tại là " + userWin + "-" + competitorWin + "--\n";
         jTextArea1.setText(tmp);
         jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength());
+        System.out.println(userWin);
     }
 
-// Cập nhật jLabel1 với tỷ số tổng khi đối thủ thắng
     public void increaseWinMatchToCompetitor() {
         competitor.setNOW(competitor.getNOW() + 1);
-        jLabel17.setText("" + competitor.getNOW()); // Hiển thị số trận thắng của đối thủ
-        competitorWin++; // Tăng tỷ số cho đối thủ
-        updateScoreLabel(); // Cập nhật jLabel1 với tỷ số mới
-    
-            String tmp = jTextArea1.getText();
+        jLabel18.setText("" + competitor.getNOW());
+        competitor.setNOG(competitor.getNOG() + 1);
+        jLabel17.setText("" + competitor.getNOG());
+        competitorWin++;
+        updateScoreLabel();
+
+        String tmp = jTextArea1.getText();
         tmp += "--Bạn đã thua, tỷ số hiện tại là " + userWin + "-" + competitorWin + "--\n";
         jTextArea1.setText(tmp);
         jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength());
-        }
-
-// Phương thức cập nhật jLabel1 để hiển thị tỷ số hiện tại
-    private void updateScoreLabel() {
-        jLabel1.setText("Tỷ số: " + userWin + "-" + competitorWin); // Cập nhật jLabel1 với tỷ số
     }
 
+    private void updateScoreLabel() {
+        jLabel1.setText("Tỷ số: " + userWin + "-" + competitorWin);
+    }
 }

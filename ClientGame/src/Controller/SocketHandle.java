@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.History;
 import Model.User;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 public class SocketHandle implements Runnable{
@@ -16,6 +19,20 @@ public class SocketHandle implements Runnable{
     private Socket socketOfClient;
     private int ID_server;
     
+    public List<User> getListRank(String[] msg){
+        List<User> friend = new ArrayList<>();
+        for(int i=1; i<msg.length; i=i+7){
+            friend.add(new User(Integer.parseInt(msg[i]),
+                msg[i+1],
+                msg[i+2],
+                msg[i+3],
+                Integer.parseInt(msg[i+4]),
+                Integer.parseInt(msg[i+5]),
+                Integer.parseInt(msg[i+6])
+                ));
+        }
+        return friend;
+    }
     public User getUserFromString(int start, String[] msg) {
         return new User(Integer.parseInt(msg[start]),
         msg[start+1],
@@ -32,7 +49,7 @@ public class SocketHandle implements Runnable{
     @Override
     public void run(){
         try{
-            socketOfClient = new Socket("192.168.0.104", 7777);
+            socketOfClient = new Socket("localhost", 7777);
             System.out.println("Connect Completed");
             os = new BufferedWriter(new OutputStreamWriter(socketOfClient.getOutputStream()));
             is = new BufferedReader(new InputStreamReader(socketOfClient.getInputStream()));
@@ -40,6 +57,7 @@ public class SocketHandle implements Runnable{
             while(true){
                 msg = is.readLine();
                 if(msg == null) break;
+                System.out.println(msg);
                 
                 String[] msgSplit = msg.split(",");
                 if(msgSplit[0].equals("server-send-id")){
@@ -67,7 +85,7 @@ public class SocketHandle implements Runnable{
                     System.out.println("LOGGED IN!");
                     Client.closeView(Client.View.GAMENOTICE);
                     Client.openView(Client.View.LOGIN,msgSplit[1],msgSplit[2]);
-                    Client.loginFrm.showError("Account logged in ");
+                    Client.loginFrm.showError("Account logged in");
                 }
                 //CASE ERROR REGISTER
                 //Username existed
@@ -102,14 +120,6 @@ public class SocketHandle implements Runnable{
                             JOptionPane.showMessageDialog(Client.findRoomFrm, "Lỗi khi sleep thread");
                         }
                     }
-//                     else if(Client.waitingRoomFrm!=null){
-//                        Client.waitingRoomFrm.showFindedCompetitor();
-//                        try {
-//                            Thread.sleep(3000);
-//                        } catch (InterruptedException ex) {
-//                            JOptionPane.showMessageDialog(Client.waitingRoomFrm, "Lỗi khi sleep thread");
-//                        }
-//                    }
                     Client.closeAllViews();
                     System.out.println("Đã vào phòng: "+roomID);
                     //Xử lý vào phòng
@@ -122,10 +132,33 @@ public class SocketHandle implements Runnable{
                 }
                 if (msgSplit[0].equals("all-ready")) {
                     JOptionPane.showMessageDialog(null, "Cả hai người chơi đã sẵn sàng! Trò chơi bắt đầu.");
-                     // Gọi phương thức để bắt đầu trò chơi ở client
                     Client.gamePlayMutilFrm.startGame();
                 }
+                if(msgSplit[0].equals("return-get-rank-charts")){
+                    if(Client.dashBoardFrm!=null){
+                        Client.dashBoardFrm.setDataToTable(getListRank(msgSplit));
+                    }
+                }
+                if (msgSplit[0].equals("return-history")) {
+                    List<History> data = new ArrayList<>();
+                    for (int i = 1; i < msgSplit.length; i += 6) {
+                        data.add(new History(
+                            Integer.parseInt(msgSplit[i]),
+                            Integer.parseInt(msgSplit[i+1]),
+                            msgSplit[i+2],
+                            Integer.parseInt(msgSplit[i+3]),
+                            msgSplit[i+4],
+                            Integer.parseInt(msgSplit[i+5])
+                        ));
+                    }
+                    Client.historyFrm.setDataToTable(data);
+                }
                 
+                if(msgSplit[0].equals("return-game-result")){
+                   String trangthai = msgSplit[1];
+                   String winnerID = msgSplit[2];
+                   Client.gamePlayMutilFrm.handleGameResult(trangthai, winnerID);
+                }
             }
         }
         catch (UnknownHostException e){

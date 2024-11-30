@@ -1,6 +1,7 @@
 package controller;
 
 import DAO.UserDAO;
+import DAO.HistoryDAO;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -11,9 +12,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.History;
 import model.User;
 
-public class ServerThread implements Runnable{
+public class ServerThread implements Runnable {
+
     private User user;
     private Socket socketofServer;
     private int clientNumber;
@@ -23,116 +26,121 @@ public class ServerThread implements Runnable{
     private UserDAO userDAO;
     private String clientIP;
     private Room room;
-    
-    public void setRoom(Room room){
+    private HistoryDAO historyDAO;
+
+    public void setRoom(Room room) {
         this.room = room;
     }
-    
-    public Room getRoom(){
+
+    public Room getRoom() {
         return room;
     }
-    
-    public BufferedReader getIs(){
+
+    public BufferedReader getIs() {
         return is;
     }
-    
-    public BufferedWriter getOs(){
+
+    public BufferedWriter getOs() {
         return os;
     }
-    
-    public int getClientNumber(){
+
+    public int getClientNumber() {
         return clientNumber;
     }
-    
-    public User getUser(){
+
+    public User getUser() {
         return user;
     }
-    
-    public String getclientIP(){
+
+    public String getclientIP() {
         return clientIP;
     }
-    
-    public void setUser(User user){
+
+    public void setUser(User user) {
         this.user = user;
     }
-    
-    public ServerThread(Socket socketOfServer, int clientNumber){
+
+    public ServerThread(Socket socketOfServer, int clientNumber) {
         this.socketofServer = socketOfServer;
         this.clientNumber = clientNumber;
         System.out.println("Server thread number " + clientNumber + " Started");
         userDAO = new UserDAO();
+        historyDAO = new HistoryDAO();
         isClosed = false;
-        
-        
-        if(this.socketofServer.getInetAddress().getHostAddress().equals("127.0.0.1")){
+
+        if (this.socketofServer.getInetAddress().getHostAddress().equals("127.0.0.1")) {
             clientIP = "127.0.0.1";
-        }
-        else{
+        } else {
             clientIP = this.socketofServer.getInetAddress().getHostAddress();
         }
     }
-    
-    public String getStringFromUser(User user1){
-        return ""+user1.getID()+","+user1.getUsername()+","+user1.getPassword()+","+user1.getNickname()+","+user1.getNOG()+","+user1.getNOW()+","+user1.getRank();
+
+    public String getStringFromUser(User user1) {
+        return "" + user1.getID() + "," + user1.getUsername() + "," + user1.getPassword() + "," + user1.getNickname() + "," + user1.getNOG() + "," + user1.getNOW() + "," + user1.getRank();
     }
-    
-    public void goToPartnerRoom() throws IOException{
-        write("go-to-room," + room.getID()+","+room.getCompetitor(this.getClientNumber()).getclientIP()+",0,"+getStringFromUser(room.getCompetitor(this.getClientNumber()).getUser()));
-         room.getCompetitor(this.clientNumber).write("go-to-room,"+ room.getID()+","+this.clientIP+",1,"+getStringFromUser(user));
+
+    public void goToPartnerRoom() throws IOException {
+        write("go-to-room," + room.getID() + "," + room.getCompetitor(this.getClientNumber()).getclientIP() + ",0," + getStringFromUser(room.getCompetitor(this.getClientNumber()).getUser()));
+        room.getCompetitor(this.clientNumber).write("go-to-room," + room.getID() + "," + this.clientIP + ",1," + getStringFromUser(user));
     }
-    
+
     @Override
     public void run() {
-        try{
+        try {
             is = new BufferedReader(new InputStreamReader(socketofServer.getInputStream()));
             os = new BufferedWriter(new OutputStreamWriter(socketofServer.getOutputStream()));
             System.out.println("Starting new thread conpleted!, ID:" + clientNumber);
-            write("server-send-id"+"," + this.clientNumber);
+            write("server-send-id" + "," + this.clientNumber);
             String msg;
-            while(!isClosed){
+            while (!isClosed) {
                 msg = is.readLine();
-                if(msg == null) break;
+                if (msg == null) {
+                    break;
+                }
                 String[] msgSplit = msg.split(",");
                 //Authen
-                if(msgSplit[0].equals("client-verify")){
+                if (msgSplit[0].equals("client-verify")) {
                     System.out.println(msg);
                     User user1 = userDAO.Auth(new User(msgSplit[1], msgSplit[2]));
-                    if(user1 == null) write("wrong-user,"+msgSplit[1]+","+msgSplit[2]);
-                    if(!user1.getIsOnline()){
-                        write("login-success,"+getStringFromUser(user1));
+                    if (user1 == null) {
+                        write("wrong-user," + msgSplit[1] + "," + msgSplit[2]);
+                    }
+                    if (!user1.getIsOnline()) {
+                        write("login-success," + getStringFromUser(user1));
                         this.user = user1;
                         userDAO.updateToOnline(this.user.getID());
-                        Server.serverThreadBus.boardCast(clientNumber,"chat-server,"+user1.getNickname()+"online");
-                        Server.admin.addMessage("["+user1.getID()+"]"+user1.getNickname()+"online");
+                        Server.serverThreadBus.boardCast(clientNumber, "chat-server," + user1.getNickname() + "online");
+                        Server.admin.addMessage("[" + user1.getID() + "]" + user1.getNickname() + "online");
                     }
                 }
                 //REGISTER
-                if(msgSplit[0].equals("register")){
+                if (msgSplit[0].equals("register")) {
                     boolean checkdup = userDAO.checkDuplicated(msgSplit[1]);
-                    if(checkdup) write("existed-username,");
-                    else{
-                        User userRegister =new User(msgSplit[1],msgSplit[2],msgSplit[3]);
+                    if (checkdup) {
+                        write("existed-username,");
+                    } else {
+                        User userRegister = new User(msgSplit[1], msgSplit[2], msgSplit[3]);
                         userDAO.addUser(userRegister);
                         User userRegistered = userDAO.Auth(userRegister);
                         this.user = userRegistered;
                         userDAO.updateToOnline(this.user.getID());
-                        Server.serverThreadBus.boardCast(clientNumber,"chat-server,"+this.user.getNickname());
-                        write("login-success,"+getStringFromUser(this.user));          
+                        Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getNickname());
+                        write("login-success," + getStringFromUser(this.user));
                     }
                 }
-                //LOG OUT
-                if(msgSplit[0].equals("offline")){
+                //LOG OUT // BUG
+                if (msgSplit[0].equals("offline")) {
                     userDAO.updateToOffline(this.user.getID());
-                    Server.admin.addMessage("["+user.getID()+"]"+user.getNickname()+ "log out!");
-                    Server.serverThreadBus.boardCast(clientNumber, "chat-server,"+this.user.getNickname()+"log out!");
+                    Server.admin.addMessage("[" + user.getID() + "]" + user.getNickname() + "log out!");
+                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getNickname() + "log out!");
                     this.user = null;
                 }
                 //CHAT
-                if(msgSplit[0].equals("chat-server")){
-                    Server.serverThreadBus.boardCast(clientNumber, msgSplit[0]+","+ user.getNickname()+": "+ msgSplit[1]);
-                    Server.admin.addMessage("["+user.getID()+"]"+user.getNickname()+": "+msgSplit[1]);
+                if (msgSplit[0].equals("chat-server")) {
+                    Server.serverThreadBus.boardCast(clientNumber, msgSplit[0] + "," + user.getNickname() + ": " + msgSplit[1]);
+                    Server.admin.addMessage("[" + user.getID() + "]" + user.getNickname() + ": " + msgSplit[1]);
                 }
-                if(msgSplit[0].equals("chat")){
+                if (msgSplit[0].equals("chat")) {
                     room.getCompetitor(clientNumber).write(msg);
                 }
                 //FINDROOM
@@ -151,7 +159,7 @@ public class ServerThread implements Runnable{
                             break;
                         }
                     }
-                    
+
                     if (!isFinded) {
                         this.room = new Room(this);
                         userDAO.updateToPlaying(this.user.getID());
@@ -164,19 +172,18 @@ public class ServerThread implements Runnable{
                     System.out.println("Đã hủy phòng");
                     this.room = null;
                 }
-                
-                // Đoạn này nằm trong phương thức xử lý tin nhắn (vd: trong phần `if-else` của server)
+
                 if (msgSplit[0].equals("ready")) {
                     int userID = Integer.parseInt(msgSplit[1]);
                     room.setReady(userID, true); // Đánh dấu người chơi đã sẵn sàng
 
-                // Kiểm tra nếu cả hai người chơi đều sẵn sàng
+                    // Kiểm tra nếu cả hai người chơi đều sẵn sàng
                     if (room.isBothReady()) {
                         room.increaseNumberOfGame();
                         userDAO.updateToPlaying(room.getUser1().getUser().getID());
                         userDAO.updateToPlaying(room.getUser2().getUser().getID());
-        
-                // Gửi thông điệp "all-ready" cho cả hai người chơi để bắt đầu trò chơi
+
+                        // Gửi thông điệp "all-ready" cho cả hai người chơi để bắt đầu trò chơi
                         room.getUser1().write("all-ready");
                         room.getUser2().write("all-ready");
                     }
@@ -192,42 +199,84 @@ public class ServerThread implements Runnable{
                     room.getUser1().write("not-ready," + userID);
                     room.getUser2().write("not-ready," + userID);
                 }
-//                if(msgSplit[0].equals("left-room")){
-//                    if (room != null) {
-////                        room.setUsersToNotPlaying();
-////                        room.decreaseNumberOfGame();
-//                        room.getCompetitor(clientNumber).write("left-room,");
-//                        room.getCompetitor(clientNumber).room = null;
-//                        this.room = null;
-//                    }
-//                }
-                   if(msgSplit[0].equals("get-rank-charts")){
+                if (msgSplit[0].equals("left-room")) {
+                    if (room != null) {
+                        room.setUsersToNotPlaying();
+//                        room.decreaseNumberOfGame();
+                        room.getCompetitor(clientNumber).write("left-room,");
+                        room.getCompetitor(clientNumber).room = null;
+                        this.room = null;
+                    }
+                }
+                if (msgSplit[0].equals("get-rank-charts")) {
                     List<User> ranks = userDAO.getUserStaticRank();
                     String res = "return-get-rank-charts,";
-                    for(User user : ranks){
-                        res += getStringFromUser(user)+",";
+                    for (User user : ranks) {
+                        res += getStringFromUser(user) + ",";
                     }
                     System.out.println(res);
                     write(res);
                 }
+                if (msgSplit[0].equals("game-result")) {
+                    int userID = Integer.parseInt(msgSplit[1]);
+                    int score = Integer.parseInt(msgSplit[2]);
+                    int roomID = Integer.parseInt(msgSplit[3]);
+
+                    room.updateScore(userID, score);
+
+                    if (room.isBothPlayersScored()) {
+                        // Tính kết quả và gửi thông báo
+                        String result = room.calculateResult();
+                        room.boardCast("return-game-result," + result);
+                        room.resetScores();
+//                        room.resetState();
+                    }
+                }
+                if (msgSplit[0].equals("get-history")) {
+                    int playerId = Integer.parseInt(msgSplit[1]); // Lấy ID người chơi từ thông điệp
+                    List<History> histories = historyDAO.getAllHistories();
+                    String res = "return-history,";
+
+                    boolean foundHistory = false; // Biến để kiểm tra nếu có lịch sử trận đấu cho người chơi
+
+                    for (History history : histories) {
+                        // Kiểm tra nếu nickname của người chơi có trong lịch sử trận đấu
+                        if (history.getNicknamePlayer1().equals(userDAO.getNickNameByID(playerId))
+                                || history.getNicknamePlayer2().equals(userDAO.getNickNameByID(playerId))) {
+                            res += history.getId() + ","
+                                    + history.getRoomId() + ","
+                                    + history.getNicknamePlayer1() + ","
+                                    + history.getScorePlayer1() + ","
+                                    + history.getNicknamePlayer2() + ","
+                                    + history.getScorePlayer2() + ",";
+                            foundHistory = true; // Đã tìm thấy lịch sử cho người chơi
+                        }
+                    }
+
+                    if (foundHistory) {
+                        write(res); // Trả về lịch sử nếu tìm thấy
+                    } else {
+                        write("no-history-found"); // Không có lịch sử, gửi thông báo khác
+                    }
+                }
             }
-        } catch (IOException e){
-               //Thay đổi giá trị cờ để thoát luồng
+        } catch (IOException e) {
+            //Thay đổi giá trị cờ để thoát luồng
             isClosed = true;
             //Cập nhật trạng thái của user
-            if(this.user!=null){
+            if (this.user != null) {
                 userDAO.updateToOffline(this.user.getID());
                 userDAO.updateToNotPlaying(this.user.getID());
-                Server.serverThreadBus.boardCast(clientNumber, "chat-server,"+this.user.getNickname()+" đã offline");
-                Server.admin.addMessage("["+user.getID()+"] "+user.getNickname()+" đã offline");
+                Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getNickname() + " đã offline");
+                Server.admin.addMessage("[" + user.getID() + "] " + user.getNickname() + " đã offline");
             }
-            
+
             //remove thread khỏi bus
             Server.serverThreadBus.remove(clientNumber);
             System.out.println(this.clientNumber + " đã thoát");
         }
     }
-    
+
     public void write(String msg) throws IOException {
         os.write(msg);
         os.newLine();

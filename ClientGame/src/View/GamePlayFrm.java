@@ -17,7 +17,7 @@ import javax.swing.Timer;
 
 public class GamePlayFrm extends javax.swing.JFrame {
     private int score = 0;             // Điểm ban đầu
-    private int timeLeft = 30;         // Thời gian đếm ngược ban đầu (20 giây)
+    private int timeLeft = 20;         // Thời gian đếm ngược ban đầu (20 giây)
     private int totalPaddyCount = 0;   // Tổng số hạt thóc trong ma trận
     private int collectedPaddyCount = 0; // Số hạt thóc đã thu thập
     private Timer countdownTimer;      // Bộ đếm ngược
@@ -27,6 +27,7 @@ public class GamePlayFrm extends javax.swing.JFrame {
      public GamePlayFrm() {
         initComponents();
         showStartDialog(); // Hiển thị dialog thông báo
+        customizeUI();
     }
      
    // Hiển thị JDialog khi bắt đầu trò chơi
@@ -60,14 +61,14 @@ public class GamePlayFrm extends javax.swing.JFrame {
             int randomNumber = (int) (Math.random() * 2); // Số ngẫu nhiên 0 hoặc 1
             JButton button = new JButton();
             button.setSize(50, 50); // Đặt kích thước nút
-            button.setLocation((int) (Math.random() * (matrixPanel.getWidth() - 50)), 0); // Đặt vị trí ngẫu nhiên ở đầu panel
+            button.setLocation((int) (Math.random() * (matrixPanel.getWidth() - 50)), 0);
 
             // Đặt hình ảnh tương ứng với loại hạt
             if (randomNumber == 0) {
                 button.setIcon(riceIcon); // Hạt gạo
             } else {
                 button.setIcon(paddyIcon); // Hạt thóc
-                totalPaddyCount++; // Tăng tổng số hạt thóc
+                totalPaddyCount++;
             }
 
             button.setOpaque(true);
@@ -164,14 +165,42 @@ public class GamePlayFrm extends javax.swing.JFrame {
                 } else {
                     countdownTimer.stop();
                     for (Timer timer : buttonTimers) {
-                        timer.stop(); }
+                        timer.stop(); 
+                    }
                     JOptionPane.showMessageDialog(null, "Time's up! Your score: " + score);
+//                    int response = JOptionPane.showConfirmDialog(null, 
+//                        "Do you want to play again?", 
+//                        "Game Over", 
+//                        JOptionPane.YES_NO_OPTION);
+//                     if (response == JOptionPane.YES_OPTION) {
+//                    if (roomId == null || roomId.isEmpty()) {
+//                        Client.openView(Client.View.GAMEPLAY); 
+//                    } else {
+//                        Client.closeView(Client.View.GAMEPLAY);
+//                        Client.openView(Client.View.GAMEMULTI); // Đoạn này có trở lại được phòng cũ hay không?
+//                    }
+//                } else {
+//                        Client.closeView(Client.View.GAMEPLAY);
+//                        Client.openView(Client.View.MAIN); 
+//                }
                 }
             }
         });
         countdownTimer.start();
     }
 
+    private void customizeUI() {
+        // Set background colors
+        matrixPanel.setBackground(new Color(240, 240, 240));
+        dropPanel.setBackground(new Color(255, 255, 255));
+
+        // Set font styles
+        timerLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        scoreLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+
+        // Set drop panel icon
+        dropPanel.setIcon(new ImageIcon(new ImageIcon("assets/basket.png").getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -258,10 +287,12 @@ public class GamePlayFrm extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(25, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(matrixPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap(25, Short.MAX_VALUE)
+                        .addComponent(matrixPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(184, 694, Short.MAX_VALUE)
                         .addComponent(timerLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(115, 115, 115)
                         .addComponent(scoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -297,13 +328,13 @@ public class GamePlayFrm extends javax.swing.JFrame {
           Client.openView(Client.View.MAIN);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
-    public static void main(String[] args) {
-        // Thiết lập giao diện để chạy chương trình
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            GamePlayFrm gamePlayFrm = new GamePlayFrm();
-            gamePlayFrm.setVisible(true); // Hiển thị cửa sổ
-        });
-    }
+//    public static void main(String[] args) {
+//        // Thiết lập giao diện để chạy chương trình
+//        javax.swing.SwingUtilities.invokeLater(() -> {
+//            GamePlayFrm gamePlayFrm = new GamePlayFrm();
+//            gamePlayFrm.setVisible(true); // Hiển thị cửa sổ
+//        });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel dropPanel;

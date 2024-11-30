@@ -15,6 +15,8 @@ import View.TurtorialFrm;
 import View.GamePlayMutilFrm;
 import Model.User;
 import View.FindRoomFrm;
+import View.GamePlayMFrm;
+import View.HistoryFrm;
 
 
     
@@ -28,7 +30,9 @@ public class Client {
         TURTORIAL,
         DASHBOARD,
         GAMEMULTI,
-        FINDROOM
+        FINDROOM,
+        GAMEPLAYM,
+        HISTORY
     }
     public static User user;
     
@@ -41,6 +45,8 @@ public class Client {
     public static DashBoardFrm dashBoardFrm;
     public static GamePlayMutilFrm gamePlayMutilFrm;
     public static FindRoomFrm findRoomFrm;
+    public static GamePlayMFrm gamePlayMFrm;
+    public static HistoryFrm historyFrm;
     
     public static SocketHandle socketHandle;
     
@@ -74,6 +80,8 @@ public class Client {
             gamePlayMutilFrm.dispose();       
         }
         if(findRoomFrm != null) findRoomFrm.dispose();
+        if(gamePlayMFrm != null) gamePlayMFrm.dispose();
+        if(historyFrm != null) historyFrm.dispose();
 }
     
     public static void closeView(View viewName){
@@ -105,6 +113,12 @@ public class Client {
                      break;
                 case FINDROOM:
                     findRoomFrm.dispose();
+                    break;
+                case GAMEPLAYM:
+                    gamePlayMFrm.dispose();
+                    break;
+                case HISTORY:
+                    historyFrm.dispose();
                     break;
             }
         }
@@ -138,7 +152,12 @@ public class Client {
                     break;
                 case FINDROOM:
                     findRoomFrm = new FindRoomFrm();
-                    findRoomFrm.setVisible(true); 
+                    findRoomFrm.setVisible(true);
+                    break;
+                case HISTORY:
+                    historyFrm = new HistoryFrm();
+                    historyFrm.setVisible(true);
+                    break;
             }
         }
     }
@@ -150,6 +169,16 @@ public class Client {
                     gamePlayMutilFrm = new GamePlayMutilFrm(competitor, room_ID, isStart, competitorIP);
                     gamePlayMutilFrm.setVisible(true);
                     break;
+            }
+        }
+    }
+    
+    public static void openView(View viewName, int room_ID){
+        if(viewName != null){
+            switch(viewName){
+                case GAMEPLAYM:
+                    gamePlayMFrm = new GamePlayMFrm(room_ID);
+                    gamePlayMFrm.setVisible(true); 
             }
         }
     }

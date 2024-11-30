@@ -1,24 +1,16 @@
 package View;
 
 import Controller.Client;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.Timer;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
-/**
- *
- * @author tadat
- */
-public class FindRoomFrm extends javax.swing.JFrame {
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+
+public class FindRoomFrm extends JFrame {
     private Timer timer;
     private boolean isFinded;
-    /**
-     * Creates new form FindRoomFrm
-     */
+
     public FindRoomFrm() {
         initComponents();
         this.setTitle("Picking Paddy and Rice");
@@ -26,167 +18,160 @@ public class FindRoomFrm extends javax.swing.JFrame {
         this.setResizable(false);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-//        jLabel5.setIcon(new ImageIcon("assets/icon/loading1.gif"));
-//        jButton1.setIcon(new ImageIcon("assets/icon/door_exit.png"));
+
         jProgressBar1.setValue(70);
         isFinded = false;
+
         startFind();
         sendFindRequest();
     }
-    public void stopAllThread(){
+
+    public void stopAllThread() {
         timer.stop();
     }
-    public void startFind(){
-        jLabel3.setVisible(false); 
-        timer = new Timer(1000, new ActionListener() {
-            int count = 20;
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                count--;
-                if (count >= 0) {
-                    if(count>=10)
-                        jLabel3.setText("00:" + count);
-                    else
-                        jLabel3.setText("00:0" + count);
-                    jProgressBar1.setValue(Math.round((float) count / 20 * 100));
+    public void startFind() {
+        jLabel3.setVisible(false);
+        timer = new Timer(1000, e -> {
+            int count = Integer.parseInt(jLabel2.getText().split(":")[1]) - 1;
+            if (count >= 0) {
+                jLabel2.setText(String.format("00:%02d", count));
+                jProgressBar1.setValue((count * 100) / 20);
+            } else {
+                ((Timer) (e.getSource())).stop();
+                try {
+                    Client.socketHandle.write("cancel-room,");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(rootPane, ex.getMessage());
+                }
+                int res = JOptionPane.showConfirmDialog(rootPane, "Tìm kiếm thất bại, bạn muốn thử lại lần nữa chứ?");
+                if (res == JOptionPane.YES_OPTION) {
+                    startFind();
+                    sendFindRequest();
                 } else {
-                    ((Timer) (e.getSource())).stop();
-                    try {
-                        Client.socketHandle.write("cancel-room,");
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(rootPane, ex.getMessage());
-                    }
-                    int res = JOptionPane.showConfirmDialog(rootPane, "Tìm kiếm thất bại, bạn muốn thử lại lần nữa chứ?");
-                    if (res==JOptionPane.YES_OPTION){
-                        startFind();
-                        sendFindRequest();
-                    }
-                    else{
-                        //Có thể hỏi chơi với máy không
-                        Client.closeView(Client.View.FINDROOM);
-                        Client.openView(Client.View.MAIN);
-                    }
+                    Client.closeView(Client.View.FINDROOM);
+                    Client.openView(Client.View.MAIN);
                 }
             }
         });
         timer.setInitialDelay(0);
         timer.start();
     }
-    
-    public void sendFindRequest(){
+
+    public void sendFindRequest() {
         try {
             Client.socketHandle.write("quick-room,");
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(rootPane, ex.getMessage());
         }
     }
-    public void showFindedRoom(){
+
+    public void showFindedRoom() {
         isFinded = true;
         timer.stop();
-        
         jLabel3.setVisible(true);
-        
     }
+
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        jPanel1 = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setPaint(new GradientPaint(0, 0, new Color(64, 64, 128), getWidth(), 0, new Color(128, 128, 192)));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jButton1 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
+        jLabel1 = new JLabel();
+        jLabel2 = new JLabel();
+        jProgressBar1 = new JProgressBar();
+        jButton1 = new JButton();
+        jLabel3 = new JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBackground(new java.awt.Color(102, 102, 102));
-        jPanel1.setForeground(new java.awt.Color(102, 102, 102));
+        // Header Panel
+        jPanel1.setPreferredSize(new Dimension(500, 60));
 
-        jLabel1.setBackground(new java.awt.Color(102, 102, 102));
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        jLabel1.setForeground(Color.WHITE);
+        jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel1.setText("Đang tìm đối thủ");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        GroupLayout panel1Layout = new GroupLayout(jPanel1);
+        jPanel1.setLayout(panel1Layout);
+        panel1Layout.setHorizontalGroup(
+                panel1Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                        .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel1)
-                .addContainerGap(31, Short.MAX_VALUE))
+        panel1Layout.setVerticalGroup(
+                panel1Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                        .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        // Timer Label
+        jLabel2.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel2.setText("00:20");
 
-        jButton1.setText("Thoát");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+        // Progress Bar
+        jProgressBar1.setValue(0);
+        jProgressBar1.setForeground(new Color(51, 204, 255));
+        jProgressBar1.setBackground(new Color(220, 220, 220));
+        jProgressBar1.setBorder(BorderFactory.createLineBorder(new Color(64, 64, 128), 1));
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(51, 153, 255));
+        // Status Label
+        jLabel3.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
+        jLabel3.setForeground(new Color(34, 139, 34));
         jLabel3.setText("Đã tìm thấy đối thủ, đang vào phòng");
+        jLabel3.setVisible(false);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        // Exit Button
+        jButton1.setText("Thoát");
+        jButton1.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        jButton1.setBackground(new Color(220, 53, 69));
+        jButton1.setForeground(Color.WHITE);
+        jButton1.setFocusPainted(false);
+        jButton1.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        jButton1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        jButton1.addActionListener(this::jButton1ActionPerformed);
+
+        // Layout
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(144, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(57, 57, 57)
-                        .addComponent(jButton1)
-                        .addGap(18, 18, 18))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(244, 244, 244))))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(58, Short.MAX_VALUE)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(72, Short.MAX_VALUE)))
+                layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                        .addComponent(jPanel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, 400, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3, GroupLayout.PREFERRED_SIZE, 400, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel2)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(37, 37, 37)
+                layout.createSequentialGroup()
+                        .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, 60, GroupLayout.PREFERRED_SIZE)
+                        .addGap(20)
+                        .addComponent(jLabel2)
+                        .addGap(20)
+                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+                        .addGap(20)
                         .addComponent(jLabel3)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(132, Short.MAX_VALUE)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(98, Short.MAX_VALUE)))
+                        .addGap(20)
+                        .addComponent(jButton1, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+                        .addGap(20)
         );
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+        setSize(500, 350);
+        setLocationRelativeTo(null);
+    }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if(isFinded)
+    private void jButton1ActionPerformed(ActionEvent evt) {
+        if (isFinded)
             return;
         try {
             Client.socketHandle.write("cancel-room,");
@@ -196,15 +181,13 @@ public class FindRoomFrm extends javax.swing.JFrame {
         timer.stop();
         Client.closeView(Client.View.FINDROOM);
         Client.openView(Client.View.MAIN);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JProgressBar jProgressBar1;
-    // End of variables declaration//GEN-END:variables
-
+    // Variables declaration
+    private JButton jButton1;
+    private JLabel jLabel1;
+    private JLabel jLabel2;
+    private JLabel jLabel3;
+    private JPanel jPanel1;
+    private JProgressBar jProgressBar1;
 }
